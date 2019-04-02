@@ -1,9 +1,16 @@
 //Voy a hacer un bloqueador de publicidad de spotify para windows
+// otra idea hacerme un script que le de al Play si la app de spotify se queda colgada en la publicidad que me tiene podrido
 
 //TODO
-// empaquetar el programa completo https://www.npmjs.com/package/pkg
-// chequear que no este muteado al inicio, unmutear cuando se cierra el programa.
+// empaquetar el programa https://www.npmjs.com/package/pkg
+// chequear que spotify no este muteado al inicio, tambien unmutear cuando se cierra el programa.
 
+//TODO completadas:
+// regexp para detectar cuando hay publicidad(esta es la variable)
+    //String que aparecen cuando hay publicidad, son las que tengo que bloquear:
+    //Spotify
+    //Advertisement
+    
 // https://www.npmjs.com/package/node-powershell
 
 // Powershell:
@@ -19,10 +26,6 @@
 // muteappvolume Spotify.exe 1
 
 
-// regexp para detectar cuando hay publicidad(esta es la variable)
-    //String que aparecen cuando hay publicidad, son las que tengo que bloquear:
-    //Spotify
-    //Advertisement
 let {exec} = require('child_process');
 let path = require('path');
 
@@ -35,13 +38,8 @@ const ps = new Shell({
 });
 
 let publicidad;
-let regexe;
-let programas = [
-  { programa: path.normalize(`"nircmdc.exe"`) }] // tiene doble comillas porque son necesarias para que reconozca el path.
+let programas = [{ programa: path.normalize(`"nircmdc.exe"`) }] // tiene doble comillas porque son necesarias para que reconozca el path.
 
-// al inicio del programa debería chequear que Spotify no este muteado por defecto para que no arranque sin sonido, creo.
-
-// ps.addCommand('Get-Process -Name Spotify | Format-List mainWindowtitle');
 ps.addCommand('Get-Process -Name Spotify | where-Object {$_.mainWindowTitle}  | Format-List mainWindowtitle');
 
 // deberia invocarlo dentro del timer??
@@ -49,40 +47,35 @@ ps.invoke()
 
 .then(output => {
   publicidad = output;
-})
-.then( () => console.log(publicidad) )
 
-//regexp para limpiar la salida de powershell
-.then( () => 
+  //ps.invoke y el resto va dentro de una funcion
+  //regexp para limpiar la salida de powershell, esto va al principio, llama a ps.invoke
   publicidad = publicidad.replace(/(\W|MainWindowTitle)/gi, "")
+  // console.log('Regexp:',publicidad)
+})
+
+.then( () => {
+  programas.map( iniciar => {
+    ((publicidad == 'Spotify') || (publicidad == 'Advertisement'))? 
+      exec( iniciar.programa + " muteappvolume Spotify.exe 1" ): 
+      exec( iniciar.programa + " muteappvolume Spotify.exe 0" )
+      
+  },(error) => console.error('Algo ha fallado:', error)
+  )
+}
 )
 
-.then( 
-  // aca va la logica que detecta si hay musica o publicidad
-  programas.map( iniciar => {
-    if (publicidad === 'Spotify' || publicidad === 'Advertisement') exec( iniciar.programa + " muteappvolume Spotify.exe 1" )
-    if (publicidad !== 'Spotify' && publicidad !== 'Advertisement') exec( iniciar.programa + " muteappvolume Spotify.exe 0" )
-  
-  },(error, stdout, stderr) => {
-    if (error) {console.error(error); return;}
-    console.log('bloqueado ', stdout);
-  })
-  )
-  
-
-
-.then((publicidad) => 
+.then( () => 
   //cierra la app, deberia borrarla
   ps.dispose()
   .then(code => {})
   .catch(error => {})
 )
-.catch(err => {
-  console.log(err);
-});
+.catch(err => console.log(err));
 
 //timer
 setInterval( () => { 
-  if (publicidad === 'Spotify' || publicidad === 'Advertisement') console.log('bloqueado!')
-  if (publicidad !== 'Spotify' && publicidad !== 'Advertisement') console.log(publicidad)
+    ((publicidad == 'Spotify') || (publicidad == 'Advertisement'))? 
+      console.log('bloqueado!'): 
+      console.log('No es', publicidad)
 }, 1000)
