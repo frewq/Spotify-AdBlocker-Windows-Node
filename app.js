@@ -31,51 +31,56 @@ let path = require('path');
 
 const Shell = require('node-powershell');
 
-const ps = new Shell({
-  verbose: true,
-  executionPolicy: 'Bypass',
-  noProfile: true
-});
 
-let publicidad;
+let publicidad = "";
 let programas = [{ programa: path.normalize(`"nircmdc.exe"`) }] // tiene doble comillas porque son necesarias para que reconozca el path.
 
-ps.addCommand('Get-Process -Name Spotify | where-Object {$_.mainWindowTitle}  | Format-List mainWindowtitle');
 
-// deberia invocarlo dentro del timer??
-ps.invoke()
+setInterval( () => { 
+  const ps = new Shell({
+    verbose: false,
+    executionPolicy: 'Bypass',
+    noProfile: true
+  });
+  ps.addCommand('Get-Process -Name Spotify | where-Object {$_.mainWindowTitle}  | Format-List mainWindowtitle');
+  ps.invoke()
+  .then(title => {
+    title = title.replace(/(\W|MainWindowTitle)/gi, "");
+    if (publicidad != title){
+      publicidad = title;
+      ((publicidad == 'Spotify') || (publicidad == 'Advertisement'))? mute(): unmute();
+    }
+  })
+  .then( () => {
+    // console.log('aca deberua fkallar');
+    ps.dispose()
+  })
+  // .catch(error => { console.log('Algo ha fallado:', error)})
+  }, 1000)
+  
+  
 
-.then(output => {
-  publicidad = output;
-
-  //ps.invoke y el resto va dentro de una funcion
   //regexp para limpiar la salida de powershell, esto va al principio, llama a ps.invoke
-  publicidad = publicidad.replace(/(\W|MainWindowTitle)/gi, "")
-  // console.log('Regexp:',publicidad)
-})
-
-.then( () => {
+function mute(){
   programas.map( iniciar => {
-    ((publicidad == 'Spotify') || (publicidad == 'Advertisement'))? 
-      exec( iniciar.programa + " muteappvolume Spotify.exe 1" ): 
-      exec( iniciar.programa + " muteappvolume Spotify.exe 0" )
-      
-  },(error) => console.error('Algo ha fallado:', error)
+    exec( iniciar.programa + " muteappvolume Spotify.exe 1" )
+
+    },(error) => console.error('Algo ha fallado:', error)
   )
 }
-)
 
-.then( () => 
-  //cierra la app, deberia borrarla
-  ps.dispose()
-  .then(code => {})
-  .catch(error => {})
-)
-.catch(err => console.log(err));
+function unmute(){
+  programas.map( iniciar => {
+    exec( iniciar.programa + " muteappvolume Spotify.exe 0" )
 
-//timer
-setInterval( () => { 
-    ((publicidad == 'Spotify') || (publicidad == 'Advertisement'))? 
-      console.log('bloqueado!'): 
-      console.log('No es', publicidad)
-}, 1000)
+    },(error) => console.error('Algo ha fallado:', error)
+  ) 
+}
+
+// .then( () => 
+//   //cierra la app, deberia borrarla
+//   ps.dispose()
+//   .then(code => {})
+//   .catch(error => {})
+// )
+// .catch(err => console.log(err));
