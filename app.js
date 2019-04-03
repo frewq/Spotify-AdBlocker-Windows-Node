@@ -21,7 +21,6 @@ setInterval( () => {
     title = title.replace(/(\W|MainWindowTitle)/gi, "");
     if (publicidad != title){
       publicidad = title;
-      // console.log(publicidad);
       ((publicidad == 'Spotify') || (publicidad == 'Advertisement'))? mute(): unmute();
     }
   })
@@ -33,7 +32,6 @@ setInterval( () => {
 function mute(){
   programas.map( iniciar => {
     exec( iniciar.programa + " muteappvolume Spotify.exe 1" )
-
     },(error) => console.error('Algo ha fallado:', error)
   )
 }
@@ -41,7 +39,6 @@ function mute(){
 function unmute(){
   programas.map( iniciar => {
     exec( iniciar.programa + " muteappvolume Spotify.exe 0" )
-
     },(error) => console.error('Algo ha fallado:', error)
   ) 
 }
