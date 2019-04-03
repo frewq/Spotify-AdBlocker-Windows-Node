@@ -1,11 +1,9 @@
 let {exec} = require('child_process');
 let path = require('path');
-
 const Shell = require('node-powershell');
-
-
-let publicidad = "";
 let programas = [{ programa: path.normalize(`"nircmdc.exe"`) }]
+let publicidad = "";
+
 
 setInterval( () => { 
 
@@ -27,7 +25,7 @@ setInterval( () => {
   .then( () => {
     powershell.dispose()
   })
-  }, 2000)
+}, 2000)
 
 function mute(){
   programas.map( iniciar => {
