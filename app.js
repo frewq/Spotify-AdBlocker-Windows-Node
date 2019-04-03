@@ -15,7 +15,7 @@ setInterval( () => {
   powershell.addCommand('Get-Process -Name Spotify | where-Object {$_.mainWindowTitle}  | Format-List mainWindowtitle');
   powershell.invoke()
   .then(title => {
-    title = title.replace(/(\W)/gi, "");
+    title = title.replace(/(\W)/g, "");
     if (ads != title){
       ads = title;
       ((ads == 'MainWindowTitleSpotify') || (ads == 'MainWindowTitleAdvertisement'))? mute(): unmute();
