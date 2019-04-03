@@ -1,0 +1,18 @@
+{
+  "name": "spotify-add-blocker",
+  "version": "1.0.0",
+  "description": "mutea el sonido de la publicidad de spotify en windows",
+  "main": "app.js",
+  "dependencies": {
+    "node-powershell": "^4.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "spotify"
+  ],
+  "author": "fabian perez",
+  "license": "ISC"
+}
