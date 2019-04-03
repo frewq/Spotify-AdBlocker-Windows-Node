@@ -2,7 +2,7 @@ const {exec} = require('child_process');
 const path = require('path');
 const Shell = require('node-powershell');
 const programas = [{ programa: path.normalize(`"nircmdc.exe"`) }]
-let publicidad = "";
+let ads = "";
 
 setInterval( () => { 
 
@@ -16,9 +16,9 @@ setInterval( () => {
   powershell.invoke()
   .then(title => {
     title = title.replace(/(\W)/gi, "");
-    if (publicidad != title){
-      publicidad = title;
-      ((publicidad == 'MainWindowTitleSpotify') || (publicidad == 'MainWindowTitleAdvertisement'))? mute(): unmute();
+    if (ads != title){
+      ads = title;
+      ((ads == 'MainWindowTitleSpotify') || (ads == 'MainWindowTitleAdvertisement'))? mute(): unmute();
     }
     powershell.dispose();
   })
