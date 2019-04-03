@@ -9,6 +9,6 @@ Este pequeño script bloquea la publicidad de spotify. Testeado en Windows 10 x6
 Habre una terminal de Node.js y ejecuta app.js, listo.
 
 ## Herramientas utilizadas:
--Powershell
--node-powershell: https://www.npmjs.com/package/node-powershell
--NirCmd: http://www.nirsoft.net/utils/nircmd.html
+* Powershell
+* node-powershell: https://www.npmjs.com/package/node-powershell
+* NirCmd: http://www.nirsoft.net/utils/nircmd.html
