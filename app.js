@@ -1,9 +1,8 @@
-let {exec} = require('child_process');
-let path = require('path');
+const {exec} = require('child_process');
+const path = require('path');
 const Shell = require('node-powershell');
-let programas = [{ programa: path.normalize(`"nircmdc.exe"`) }]
+const programas = [{ programa: path.normalize(`"nircmdc.exe"`) }]
 let publicidad = "";
-
 
 setInterval( () => { 
 
@@ -16,14 +15,12 @@ setInterval( () => {
   powershell.addCommand('Get-Process -Name Spotify | where-Object {$_.mainWindowTitle}  | Format-List mainWindowtitle');
   powershell.invoke()
   .then(title => {
-    title = title.replace(/(\W|MainWindowTitle)/gi, "");
+    title = title.replace(/(\W)/gi, "");
     if (publicidad != title){
       publicidad = title;
-      ((publicidad == 'Spotify') || (publicidad == 'Advertisement'))? mute(): unmute();
+      ((publicidad == 'MainWindowTitleSpotify') || (publicidad == 'MainWindowTitleAdvertisement'))? mute(): unmute();
     }
-  })
-  .then( () => {
-    powershell.dispose()
+    powershell.dispose();
   })
 }, 2000)
 
