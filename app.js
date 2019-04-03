@@ -1,7 +1,7 @@
 const {exec} = require('child_process');
 const path = require('path');
 const Shell = require('node-powershell');
-const programas = [{ programa: path.normalize(`"nircmdc.exe"`) }]
+const programs = [{ program: path.normalize(`"nircmdc.exe"`) }]
 let ads = "";
 
 setInterval( () => { 
@@ -25,15 +25,15 @@ setInterval( () => {
 }, 2000)
 
 function mute(){
-  programas.map( iniciar => {
-    exec( iniciar.programa + " muteappvolume Spotify.exe 1" )
+  programs.map( start => {
+    exec( start.program + " muteappvolume Spotify.exe 1" )
     },(error) => console.error('Algo ha fallado:', error)
   )
 }
 
 function unmute(){
-  programas.map( iniciar => {
-    exec( iniciar.programa + " muteappvolume Spotify.exe 0" )
+  programs.map( start => {
+    exec( start.program + " muteappvolume Spotify.exe 0" )
     },(error) => console.error('Algo ha fallado:', error)
   ) 
 }
