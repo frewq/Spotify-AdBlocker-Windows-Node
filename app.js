@@ -1,12 +1,12 @@
+const {exec} = require('child_process');
+const path = require('path');
+const programs = [{ program: path.normalize(`"nircmdc.exe"`) }];
+const Shell = require('node-powershell');
 
-( function(){
-  const {exec} = require('child_process');
-  const path = require('path');
-  const Shell = require('node-powershell');
-  const programs = [{ program: path.normalize(`"nircmdc.exe"`) }];
+const silenciador = ( function(){
   let ads = "";
   
-  setInterval( () => { 
+  return () => {setInterval( () => { 
 
   const powershell = new Shell({
     verbose: false,
@@ -26,7 +26,7 @@
   })
   .catch( () => process.exit(1) )
 }, 2000);
-})()
+}})()
 
 function mute(){
   programs.map( start => {
@@ -41,3 +41,5 @@ function unmute(){
     },(error) => console.error('Algo ha fallado:', error)
   ) 
 }
+
+silenciador();
