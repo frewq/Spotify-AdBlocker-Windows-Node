@@ -17,7 +17,7 @@
   > `node app.js`
 
 ***
-## Used tools:
+## Toolset:
 * Windows PowerShell
 * node-powershell: https://www.npmjs.com/package/node-powershell
 * NirCmd: http://www.nirsoft.net/utils/nircmd.html
