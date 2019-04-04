@@ -27,4 +27,7 @@
 Lo que hace este script es obtener mediante Powershell el título de lo que se está reproduciendo en la aplicación de Spotify. Luego, mediante un timer que se inicia cada cierto tiempo (2 segundos) detecta si lo que se reproduce es publicidad, y si es así, entonces con el programa NirCmd silencia Spotify hasta que comience proxima canción.
 
 ***
+## Nota
+A corregir: si se minimiza a la bandeja de entrada no funciona.
+***
 ### Fabian Perez
