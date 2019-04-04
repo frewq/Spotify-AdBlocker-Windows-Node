@@ -10,11 +10,18 @@
 
 ***
 ## How to run it:
-(EN) Open a Node.js's terminal and execute app.js. Done.
+(EN) 
+  * First start Spotify,
+  * then open a Node.js's terminal and execute app.js 
 
-(ESP) Habre una terminal de Node.js y ejecuta app.js, listo.
+      > `node app.js`   or just run run.bat.
 
-  > `node app.js`
+(ESP)
+  * Primero inicia Spotify,
+  * luego habre una terminal de Node.js y ejecuta app.js 
+
+      > `node app.js`   o simplemente ejecuta run.bat.
+
 
 ***
 ## Toolset:
