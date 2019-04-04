@@ -3,9 +3,9 @@ const path = require('path');
 const programs = [{ program: path.normalize(`"nircmdc.exe"`) }];
 const Shell = require('node-powershell');
 
-const silenciador = ( function(){
+const silencer = ( function(){
   let ads = "";
-  
+  console.log("Spotify adblocker is running");
   return () => {setInterval( () => { 
 
   const powershell = new Shell({
@@ -42,4 +42,4 @@ function unmute(){
   ) 
 }
 
-silenciador();
+silencer();
