@@ -1,5 +1,12 @@
-// TODO
+//tengo que normalizarlo
+//tengo que detectar la carpeta del usuario activo, en la carpeta de usuario pueden haber varias carpeta, tengo que detectar la activa y tomar el nombre de usuario
+// usar fs.readdirSync en el directorio de usuarios
+// console.log(`${process.env.APPDATA}/Spotify`)
+
+
+// TODOgi
 // regexp para el path de ad-state-storage
+// Spotify a veces se cuelga en los estados MainWindowTitleSpotify o MainWindowTitleAdvertisement, no es culpa de este programa si no de la aplicacion oficial. Buscaré una solución. Pensé en usar hotkeys de windows para pausar y darle play automaticamente si pasa algún tiempo en esos estados. MainWindowTitleSpotifyFree es el estado que se activa si manualmente pauso la aplicación.
 
 // https://stackoverflow.com/questions/13206724/how-to-get-the-list-of-process
 
@@ -21,10 +28,26 @@
 const {exec} = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const programs = [{ program: path.normalize(`"nircmdc.exe"`),
-                    log: path.normalize(`C:/Users/Fabian/AppData/Roaming/Spotify/Users/mrfrewq-user/ad-state-storage.bnk`)
-                  }];
 const Shell = require('node-powershell');
+
+let directorioActivo = ''
+
+//Encuentro el archivo 'ad-state-storage.bnk' del usuario activo. El usuario activo se lo puede distinguir porque es el único que tiene el archivo 'pending-messages' en su directorio personal
+let listaUsuarios = fs.readdirSync(path.normalize(process.env.APPDATA + `/Spotify/Users`))
+listaUsuarios.map( (usuario) => {
+  let carpetaUsuario = fs.readdirSync(path.normalize(process.env.APPDATA + `/Spotify/Users/${usuario}`));
+  carpetaUsuario.map( (archivo_pending_messages) => {
+    if (archivo_pending_messages === 'pending-messages') {
+      directorioActivo = path.normalize(process.env.APPDATA + `/Spotify/Users/${usuario}/ad-state-storage.bnk`)
+      console.log('este es el directorio activo:', directorioActivo)
+    }
+  })
+})
+
+
+const programs = [{ program: path.normalize(`"nircmdc.exe"`),
+                    log: directorioActivo
+                  }];
 
 const spotifyfile = String(programs.map( (changes) => changes.log ));
 
