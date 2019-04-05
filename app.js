@@ -1,17 +1,12 @@
-//tengo que normalizarlo
-//tengo que detectar la carpeta del usuario activo, en la carpeta de usuario pueden haber varias carpeta, tengo que detectar la activa y tomar el nombre de usuario
-// usar fs.readdirSync en el directorio de usuarios
-// console.log(`${process.env.APPDATA}/Spotify`)
-
-
-// TODOgi
-// regexp para el path de ad-state-storage
+// TODO
+// solo funciona si inicio spotify y LE DOY PLAY, corregir esto (usar el archivo Log).
+// tengo que usar tracklist para ver si está corriendo spotify y luego buscar el archivo pending-messages o voy a tener que cuidarme de no iniciar el bloqueador antes de iniciar spotify
+// O la alternativa a tracklist es detectar que ad-state-storage.bnk este funcionando y pending_messages no, si se dan ambos casos a la vez entonces no buscar en el directorio hasta que esto cambie. Creo que fs.readdirsync puede retornar null si no encuentra algo, investigar.
 // Spotify a veces se cuelga en los estados MainWindowTitleSpotify o MainWindowTitleAdvertisement, no es culpa de este programa si no de la aplicacion oficial. Buscaré una solución. Pensé en usar hotkeys de windows para pausar y darle play automaticamente si pasa algún tiempo en esos estados. MainWindowTitleSpotifyFree es el estado que se activa si manualmente pauso la aplicación.
 
 // https://stackoverflow.com/questions/13206724/how-to-get-the-list-of-process
 
 // https://thisdavej.com/how-to-watch-for-files-changes-in-node-js/
-// https://www.npmjs.com/package/node-watch
 
 // C:\Users\Fabian\AppData\Roaming\Spotify\Users\mrfrewq-user
 // -ad-state-storage.bnk (creo que tengo trabajar con este)
@@ -23,6 +18,7 @@
 // 	desaparece cuando se cierra spotify o hay un se escucha un ad
 // 	se actualiza constantemente
 // 	cuando pauso y le doy play se actualiza
+// -'log' APARECE cuando se CIERRA la app y DESAPARECE cuando se INICIA
 
 
 const {exec} = require('child_process');
