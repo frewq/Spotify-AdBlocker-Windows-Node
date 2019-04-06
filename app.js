@@ -51,9 +51,9 @@ const pausado = (function () {
 
 const silenciar = (function () {
   let ads = "";
-
+  let song = ''
   return () => {
-    console.log("Spotify adblocker is running");
+    console.log("Checking...");
 
     const powershell = new Shell({
       verbose: false,
@@ -63,10 +63,12 @@ const silenciar = (function () {
     powershell.addCommand('Get-Process -Name Spotify | where-Object {$_.mainWindowTitle}  | Format-List mainWindowtitle');
     powershell.invoke()
       .then(title => {
+        song = title.replace(/(MainWindowTitle)/gi, "");
+        song = song.replace(/(^\W*|\W*$)/gim, "");
         title = title.replace(/(\W)/gi, "");
         if (ads != title) {
           ads = title;
-          ((ads == 'MainWindowTitleSpotify') || (ads == 'MainWindowTitleAdvertisement')) ? mute(1): mute(0);
+          ((ads == 'MainWindowTitleSpotify') || (ads == 'MainWindowTitleAdvertisement')) ? mute(1, song): mute(0, song);
         }
         powershell.dispose();
       })
@@ -74,39 +76,43 @@ const silenciar = (function () {
   }
 })();
 
-let logFile = false
-let usuarioactivo = ''
+const starting = (function (){
+  let logFile = false
+  let usuarioactivo = ''
+  let carpetasUsuario = fs.readdirSync(path.normalize(process.env.APPDATA + `/Spotify/Users/`));
 
-let carpetasUsuario = fs.readdirSync(path.normalize(process.env.APPDATA + `/Spotify/Users/`));
-carpetasUsuario.map((carpeta) => {
-  let inicioSpotify = fs.readdirSync(path.normalize(process.env.APPDATA + `/Spotify/Users/${carpeta}`))
-  inicioSpotify.map((searchLog) => {if (searchLog === 'log') logFile = true;})
+  return () => {
+    carpetasUsuario.map((carpeta) => {
+      let inicioSpotify = fs.readdirSync(path.normalize(process.env.APPDATA + `/Spotify/Users/${carpeta}`))
+      inicioSpotify.map((searchLog) => {if (searchLog === 'log') logFile = true;})
 
-  if (logFile === false) {usuarioactivo = carpeta; console.log('Starting'); spotify(usuarioactivo);}
-  if (logFile === true) {
-    console.log('Waiting for Spotify...')
+      if (logFile === false) {usuarioactivo = carpeta; console.log('Spotify adblock has started'); spotify(usuarioactivo);}
+      if (logFile === true) {
+        console.log('Waiting for Spotify...')
 
-    let fsWait = false;
-    fs.watch(path.normalize(process.env.APPDATA + `/Spotify/Users/`), (event, usuarioactivo) => {
-      if (usuarioactivo) {
-        if (fsWait) {
-          console.log(`The folder ${usuarioactivo} has been modified`);
-          return
-        };
-        fsWait = setTimeout(() => {
-          console.log(`${usuarioactivo}: logged in`)
-          spotify(usuarioactivo)
-          fsWait = true;
-        }, 2000);
+        let fsWait = false;
+        fs.watch(path.normalize(process.env.APPDATA + `/Spotify/Users/`), (event, usuarioactivo) => {
+          if (usuarioactivo) {
+            if (fsWait) {
+              // console.log(`The folder ${usuarioactivo} has been modified`);
+              return
+            };
+            fsWait = setTimeout(() => {
+              console.log(`${usuarioactivo}: logged in`)
+              spotify(usuarioactivo)
+              fsWait = true;
+            }, 2000);
+          }
+        });
       }
-    });
-  } 
-})
+    })
+  }
+})()
 
-function mute(args) {
+function mute(args, song = '-') {
     exec(`nircmdc.exe muteappvolume Spotify.exe ${args}`)
     if (args === 1) console.log("Ad blocked!")
-    if (args === 0) console.log("Next song")
+    if (args === 0) console.log(`Now playing: ${song}`)
 };
 
 function fsWaitChanges(watchThis, call, wait, timer) {
@@ -124,7 +130,9 @@ function fsWaitChanges(watchThis, call, wait, timer) {
 
 function spotify(usuarioactivo) {
   let directorioActivo = path.normalize(process.env.APPDATA + `/Spotify/Users/${usuarioactivo}/ad-state-storage.bnk`)
-  console.log(`Watching for changes on ${directorioActivo}`);
+  console.log(`Monitoring: ${directorioActivo}`);
   fsWaitChanges(path.normalize(process.env.APPDATA + `/Spotify/Users/${usuarioactivo}`), pausado, false, 1000)
   fsWaitChanges(directorioActivo, silenciar, false, 100)
 }
+
+starting();
