@@ -1,6 +1,11 @@
 // TODO
+//  tasklist /fi "IMAGENAME eq spotify.exe" /v               https://www.computerhope.com/tasklist.htm
+// tasklist /fi "IMAGENAME eq spotify.exe" /v /fo list      falta mejorar este comando
+// hacer un .ini con opciones configurables: bat oculto, sin log, archivos a monitorear, ubicacion de carpeta personal, etc.
+// ver porque powershell escribe constantemente en el disco
 // si hay mas de 1 usuario se bugea, para esto va a servir 'pending messsages'
 // los mensajes no salen si inicio spotify antes que el script
+// si sale como mensaje 'ad blocked', entonces esperar 1 minuto(es un tiempo prudencial, los ads no duran más de 30 segundos), luego deberia usar tasklist para ver que el proceso está corriendo, y si es así usar autohoykey para iniciar el script 'pausar-->play'
 // autohotkey + https://www.npmjs.com/package/hotkeys-js
 
 // O la alternativa a tracklist es detectar que ad-state-storage.bnk este funcionando y pending_messages no, si se dan ambos casos a la vez entonces no buscar en el directorio hasta que esto cambie. Creo que fs.readdirsync puede retornar null si no encuentra algo, investigar.
@@ -30,18 +35,14 @@ const Shell = require('node-powershell');
 const pausado = (function () {
   let ads = "";
   return () => {
-    const powershell = new Shell({
-      verbose: false,
-      executionPolicy: 'Bypass',
-      noProfile: true
-    });
+    const powershell = new Shell({ verbose: false, executionPolicy: 'Bypass', noProfile: true });
     powershell.addCommand('Get-Process -Name Spotify | where-Object {$_.mainWindowTitle}  | Format-List mainWindowtitle');
     powershell.invoke()
-      .then(title => {
-        title = title.replace(/(\W)/gi, "");
-        if (ads != title) {
-          ads = title;
-          if (ads == 'MainWindowTitleSpotifyFree') console.log("Spotify is paused")
+      .then(song => {
+        song = song.replace(/(MainWindowTitle)/gi, '').replace(/(^\W*|\W*$)/gim, '');
+        if (ads != song) {
+          ads = song;
+          if (ads == 'Spotify Free') console.log('Spotify is paused');
         }
         powershell.dispose();
       })
@@ -50,60 +51,38 @@ const pausado = (function () {
 })();
 
 const silenciar = (function () {
-  let ads = "";
-  let song = ''
+  let ads = '';
   return () => {
-    console.log("Checking...");
-
-    const powershell = new Shell({
-      verbose: false,
-      executionPolicy: 'Bypass',
-      noProfile: true
-    });
+    const powershell = new Shell({ verbose: false, executionPolicy: 'Bypass', noProfile: true });
     powershell.addCommand('Get-Process -Name Spotify | where-Object {$_.mainWindowTitle}  | Format-List mainWindowtitle');
     powershell.invoke()
-      .then(title => {
-        song = title.replace(/(MainWindowTitle)/gi, "");
-        song = song.replace(/(^\W*|\W*$)/gim, "");
-        title = title.replace(/(\W)/gi, "");
-        if (ads != title) {
-          ads = title;
-          ((ads == 'MainWindowTitleSpotify') || (ads == 'MainWindowTitleAdvertisement')) ? mute(1, song): mute(0, song);
-        }
-        powershell.dispose();
-      })
-      .catch(() => process.exit(1))
+    .then(song => {
+      song = song.replace(/(MainWindowTitle)/gi, '').replace(/(^\W*|\W*$)/gim, '');
+      if (ads != song) {
+        ads = song;
+        console.log('Checking...');
+        ads == 'Spotify' || ads == 'Advertisement' ? mute(1, song): mute(0, song);
+      }
+      powershell.dispose();
+    })
+    .catch(() => process.exit(1))
   }
 })();
 
 const starting = (function (){
-  let logFile = false
-  let usuarioactivo = ''
+  let logFile = false;
+  let usuarioactivo = '';
   let carpetasUsuario = fs.readdirSync(path.normalize(process.env.APPDATA + `/Spotify/Users/`));
 
   return () => {
     carpetasUsuario.map((carpeta) => {
       let inicioSpotify = fs.readdirSync(path.normalize(process.env.APPDATA + `/Spotify/Users/${carpeta}`))
       inicioSpotify.map((searchLog) => {if (searchLog === 'log') logFile = true;})
-
+      
       if (logFile === false) {usuarioactivo = carpeta; console.log('Spotify adblock has started'); spotify(usuarioactivo);}
       if (logFile === true) {
         console.log('Waiting for Spotify...')
-
-        let fsWait = false;
-        fs.watch(path.normalize(process.env.APPDATA + `/Spotify/Users/`), (event, usuarioactivo) => {
-          if (usuarioactivo) {
-            if (fsWait) {
-              // console.log(`The folder ${usuarioactivo} has been modified`);
-              return
-            };
-            fsWait = setTimeout(() => {
-              console.log(`${usuarioactivo}: logged in`)
-              spotify(usuarioactivo)
-              fsWait = true;
-            }, 2000);
-          }
-        });
+        fsWaitChanges(path.normalize(process.env.APPDATA + `/Spotify/Users/`), spotify, usuarioactivo, true, 2000, `${usuarioactivo}: logged in`);
       }
     })
   }
@@ -111,28 +90,31 @@ const starting = (function (){
 
 function mute(args, song = '-') {
     exec(`nircmdc.exe muteappvolume Spotify.exe ${args}`)
-    if (args === 1) console.log("Ad blocked!")
+    if (args === 1) console.log('Ad blocked!')
     if (args === 0) console.log(`Now playing: ${song}`)
 };
 
-function fsWaitChanges(watchThis, call, wait, timer) {
+function fsWaitChanges(file, callback, args = null, exitLoop, delay, message = undefined) {
   let fsWait = false;
-  fs.watch(watchThis, (event, filename) => {
+  fs.watch(file, (event, filename) => {
     if (filename) {
       if (fsWait) return;
       fsWait = setTimeout(() => {
-        call();
-        fsWait = wait;
-      }, timer);
+        if (message != undefined) console.log(message);
+        args != null? callback(args): callback();
+        fsWait = exitLoop;
+      }, delay);
     }
   })
 }
 
-function spotify(usuarioactivo) {
+function spotify (usuarioactivo) {
   let directorioActivo = path.normalize(process.env.APPDATA + `/Spotify/Users/${usuarioactivo}/ad-state-storage.bnk`)
+  //tira error si inicio spotify y luego inicio el script, por eso antes apuntaba a la carpeta raiz y funcionaba bien
+  let directorioPausado = path.normalize(process.env.APPDATA + `/Spotify/Users/${usuarioactivo}`)
   console.log(`Monitoring: ${directorioActivo}`);
-  fsWaitChanges(path.normalize(process.env.APPDATA + `/Spotify/Users/${usuarioactivo}`), pausado, false, 1000)
-  fsWaitChanges(directorioActivo, silenciar, false, 100)
+  fsWaitChanges(directorioPausado, pausado, null , false, 1000)
+  fsWaitChanges(directorioActivo, silenciar, null , false, 100)
 }
 
 starting();
