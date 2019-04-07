@@ -3,7 +3,7 @@
 This script mutes Spotify's ads. Tested on Windows 10 x64.
 
 ***
-## Instalation:
+## Installation:
 
 * > `npm install`
 
