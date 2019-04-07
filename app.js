@@ -69,6 +69,8 @@ const silenciar = (function () {
   }
 })();
 
+
+
 const starting = (function (){
   let logFile = false;
   let usuarioactivo = '';
@@ -82,7 +84,8 @@ const starting = (function (){
       if (logFile === false) {usuarioactivo = carpeta; console.log('Spotify adblock has started'); spotify(usuarioactivo);}
       if (logFile === true) {
         console.log('Waiting for Spotify...')
-        fsWaitChanges(path.normalize(process.env.APPDATA + `/Spotify/Users/`), spotify, usuarioactivo, true, 2000, `${usuarioactivo}: logged in`);
+        fsWaitChanges(path.normalize(process.env.APPDATA + `/Spotify/Users/${carpeta}`), spotify, carpeta, true, 2000);
+        // fsWaitChanges(path.normalize(process.env.APPDATA + `/Spotify/Users/`), spotify, usuarioactivo, true, 2000, `${usuarioactivo}: logged in`);
       }
     })
   }
