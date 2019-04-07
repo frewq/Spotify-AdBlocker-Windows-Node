@@ -23,7 +23,6 @@ function mute(args, song = 'unknown') {
     exec(`nircmdc.exe muteappvolume Spotify.exe ${args}`)
     if (args === 1) console.log('Ad blocked!')
     if (args === 0) console.log(`Now playing: ${song}`)
-    // if ((args === 0) && (song != 'Spotify Free')) console.log(`Now playing: ${song}`)
 };
 
 function isPaused(ads, song) {
@@ -67,7 +66,6 @@ function eventFileChanged(file, callback, args, endEvent, delay, message = undef
 }
 
 function spotify (usuarioactivo) {
-  //si cierro spotify, este archivo deja de exister y el script termina
   let playing = path.normalize(process.env.APPDATA + `/Spotify/Users/${usuarioactivo}/ad-state-storage.bnk`)
   let paused = path.normalize(process.env.APPDATA + `/Spotify/Users/${usuarioactivo}`)
   console.log(`Monitoring: ${playing}`);
