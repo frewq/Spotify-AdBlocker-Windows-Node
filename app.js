@@ -35,32 +35,25 @@ const Shell = require('node-powershell');
 const starting = (function (){
   console.log('Loading...');
   let logFile = false;
-  let usuarioactivo = '';
   let users = fs.readdirSync(path.normalize(process.env.APPDATA + `/Spotify/Users/`));
-
+  // aca deberia ir tasklist
   return () => {
-    users.map((folder) => {
-      let inicioSpotify = path.normalize(process.env.APPDATA + `/Spotify/Users/${folder}`)
-      eventFileChanged(inicioSpotify, spotify, folder, true, 100, 'Waiting for Spotify...')
+    users.map((userFolder) => {
+      let userPath = path.normalize(process.env.APPDATA + `/Spotify/Users/${userFolder}`)
+      eventFileChanged(userPath, spotify, userFolder, true, 100, 'Session started...')
 
-
-
-      // inicioSpotify.map((searchLog) => {if (searchLog === 'log') logFile = true;})
-      
-      // if (logFile === false) {usuarioactivo = carpeta; console.log('Spotify adblock has started'); spotify(usuarioactivo);}
-      // if (logFile === true) {
-      //   console.log('Waiting for Spotify...')
-      //   eventFileChanged(path.normalize(process.env.APPDATA + `/Spotify/Users/${carpeta}`), spotify, carpeta, true, 2000);
-      //   // fsWaitChanges(path.normalize(process.env.APPDATA + `/Spotify/Users/`), spotify, usuarioactivo, true, 2000, `${usuarioactivo}: logged in`);
-      // }
+      files = fs.readdirSync(path.normalize(process.env.APPDATA + `/Spotify/Users/${userFolder}`))
+      files.map((searchLog) => {if (searchLog === 'log') logFile = true;})
+      logFile === false? console.log('Spotify adblock has started'): console.log('Spotify adblock has started. Waiting for Spotify...');
     })
   }
 })()
 
-function mute(args, song = '-') {
+function mute(args, song = 'unknown') {
     exec(`nircmdc.exe muteappvolume Spotify.exe ${args}`)
     if (args === 1) console.log('Ad blocked!')
     if (args === 0) console.log(`Now playing: ${song}`)
+    // if ((args === 0) && (song != 'Spotify Free')) console.log(`Now playing: ${song}`)
 };
 
 function isPaused(ads) {
@@ -104,6 +97,7 @@ function eventFileChanged(file, callback, args, endEvent, delay, message = undef
 }
 
 function spotify (usuarioactivo) {
+  //si cierro spotify este archivo deja de exister el el script termina
   let directorioActivo = path.normalize(process.env.APPDATA + `/Spotify/Users/${usuarioactivo}/ad-state-storage.bnk`)
   let directorioPausado = path.normalize(process.env.APPDATA + `/Spotify/Users/${usuarioactivo}`)
   console.log(`Monitoring: ${directorioActivo}`);
