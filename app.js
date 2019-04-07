@@ -56,7 +56,7 @@ function mute(args, song = 'unknown') {
     // if ((args === 0) && (song != 'Spotify Free')) console.log(`Now playing: ${song}`)
 };
 
-function isPaused(ads) {
+function isPaused(ads, song) {
   if (ads == 'Spotify Free') console.log('Spotify is paused');
 };
 
@@ -65,7 +65,7 @@ function adBlocker(ads, song) {
 };
 
 const powershell = (function () {
-  let ads = '';
+  let ads = ''; //evita la dupliacion de mensajes a consola
   return (callb) => {
     const pshell = new Shell({ verbose: false, executionPolicy: 'Bypass', noProfile: true });
     pshell.addCommand('Get-Process -Name Spotify | where-Object {$_.mainWindowTitle}  | Format-List mainWindowtitle');
@@ -97,12 +97,12 @@ function eventFileChanged(file, callback, args, endEvent, delay, message = undef
 }
 
 function spotify (usuarioactivo) {
-  //si cierro spotify este archivo deja de exister el el script termina
-  let directorioActivo = path.normalize(process.env.APPDATA + `/Spotify/Users/${usuarioactivo}/ad-state-storage.bnk`)
-  let directorioPausado = path.normalize(process.env.APPDATA + `/Spotify/Users/${usuarioactivo}`)
-  console.log(`Monitoring: ${directorioActivo}`);
-  eventFileChanged(directorioPausado, powershell, isPaused, false, 1000)
-  eventFileChanged(directorioActivo, powershell, adBlocker, false, 100)
+  //si cierro spotify, este archivo deja de exister y el script termina
+  let playing = path.normalize(process.env.APPDATA + `/Spotify/Users/${usuarioactivo}/ad-state-storage.bnk`)
+  let paused = path.normalize(process.env.APPDATA + `/Spotify/Users/${usuarioactivo}`)
+  console.log(`Monitoring: ${playing}`);
+  eventFileChanged(playing, powershell, adBlocker, false, 100)
+  eventFileChanged(paused, powershell, isPaused, false, 1000)
 }
 
 starting();
